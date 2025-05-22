@@ -54,10 +54,7 @@ const fallbackResults = {
 
 export const analyzeTestResults = async (answers, questions) => {
   try {
-    if (!API_KEY) {
-      console.warn('API key non configurata, utilizzo risultati di fallback');
-      return fallbackResults;
-    }
+    // Rimosso il check sulla API_KEY, la gestione passa alla funzione Netlify
 
     // Prepara i dati per l'analisi
     const analysisData = {
@@ -68,15 +65,14 @@ export const analyzeTestResults = async (answers, questions) => {
       }))
     };
 
-    // Chiamata all'API di ChatGPT
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    // Chiamata alla funzione Netlify
+    const res = await fetch("/.netlify/functions/openai", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4",
+        // Passiamo i messaggi come richiesto dalla funzione Netlify
         messages: [
           {
             role: "system",
@@ -144,30 +140,33 @@ Formatta la risposta come JSON con questa struttura:
             role: "user",
             content: JSON.stringify(analysisData)
           }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
+        ]
       })
     });
 
-    const data = await response.json();
+    const data = await res.json();
     
-    if (!response.ok) {
-      console.error('Errore API:', data.error?.message);
+    if (!res.ok) {
+      console.error('Errore funzione Netlify:', data.error?.message || data);
       return fallbackResults;
     }
 
     try {
-      // Estrai e parsa il JSON dalla risposta di ChatGPT
+      // Estrai e parsa il JSON dalla risposta della funzione Netlify
       const analysisResult = JSON.parse(data.choices[0].message.content);
       return analysisResult;
     } catch (parseError) {
-      console.error('Errore nel parsing della risposta:', parseError);
+      console.error('Errore nel parsing della risposta dalla funzione Netlify:', parseError);
+      // Puoi aggiungere un log per vedere la risposta completa se il parsing fallisce
+      console.log('Risposta completa dalla funzione Netlify:', data);
       return fallbackResults;
     }
 
   } catch (error) {
-    console.error('Errore nell\'analisi dei risultati:', error);
+    console.error('Errore nell\'analisi dei risultati o nella chiamata alla funzione Netlify:', error);
     return fallbackResults;
   }
-}; 
+};
+
+// Rimosso l'esportazione di API_KEY se non utilizzata altrove
+// export const API_KEY = process.env.VITE_OPENAI_API_KEY; // Rimuovi o commenta questa riga se API_KEY non serve più 
