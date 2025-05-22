@@ -15,9 +15,13 @@ exports.handler = async function(event, context) {
     const OPENAI_API_KEY = process.env.VITE_OPENAI_API_KEY;
 
     if (!OPENAI_API_KEY) {
+      console.error('Chiave API non configurata');
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Chiave API OpenAI non configurata.' }),
+        body: JSON.stringify({ 
+          error: 'Chiave API OpenAI non configurata.',
+          details: 'Verifica che la variabile d\'ambiente VITE_OPENAI_API_KEY sia configurata in Netlify'
+        }),
       };
     }
 
@@ -32,10 +36,10 @@ exports.handler = async function(event, context) {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4", // Puoi rendere il modello configurabile se necessario
+        model: "gpt-3.5-turbo", // Modello più accessibile
         messages: messages,
-        temperature: 0.7, // Puoi rendere la temperatura configurabile
-        max_tokens: 2000, // Puoi rendere max_tokens configurabile
+        temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
@@ -45,21 +49,27 @@ exports.handler = async function(event, context) {
       console.error('Errore API OpenAI:', data);
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: data.error?.message || 'Errore nella chiamata API OpenAI' }),
+        body: JSON.stringify({ 
+          error: data.error?.message || 'Errore nella chiamata API OpenAI',
+          details: data
+        }),
       };
     }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data), // Inoltra la risposta di OpenAI al frontend
+      body: JSON.stringify(data),
     };
 
   } catch (error) {
     console.error('Errore nella funzione Netlify:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Errore interno del server.' }),
+      body: JSON.stringify({ 
+        error: 'Errore interno del server.',
+        details: error.message
+      }),
     };
   }
 };
