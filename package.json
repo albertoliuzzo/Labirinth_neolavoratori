@@ -25,6 +25,7 @@
     "emailjs-com": "^3.2.0",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.285.0",
+    "node-fetch": "^2.6.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.5.0",

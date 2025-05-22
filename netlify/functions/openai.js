@@ -1,5 +1,5 @@
 // netlify/functions/openai.js
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
   // Solo richieste POST
